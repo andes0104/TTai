@@ -1,0 +1,15 @@
+NPY_ROOT_PATH="npy_path"
+NO_SEQUENCES="30"
+SEQUENCES_LENGTH="30"
+START_FOLDER="1"
+
+# 動作
+ACTIONS ='["backhand loop", "forehand", "forehand loop"]'
+
+# 隨機種子
+RANDOM_STATE = "10"
+
+# Model檔
+MODEL_FILE = "action.h5"
+
+PRE_TRAIN_VIDEO = "pre_train_video"
