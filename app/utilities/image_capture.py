@@ -16,6 +16,7 @@ def video_split(video_path, save_path):
             print(f"{save_path}/{str(frame_num//30)}.jpg")
             frame_num += 1
         cap.release()
+        cv2.destroyAllWindows()
 
 
 DATA_DIR = "./test_video/forehand"
