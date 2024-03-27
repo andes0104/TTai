@@ -96,10 +96,8 @@ class poseDetector:
             )
         return angle
 
-
 def save_frame_to_npy(
-    action_type: str, npy_path: str, video: str, action_frame_list: list
-):
+    action_type: str, npy_path: str, video: str, action_frame_list: list):
     common = Common()
     holistic = common.mp_holistic
     one_full_action = 1
@@ -114,19 +112,19 @@ def save_frame_to_npy(
             cap = cv2.VideoCapture(video)
             cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
             frame_num = 1
-            # 將該動作的每一幀存成一個npy
-            for frame in range(start_frame, end_frame + 1):
+            # 將該動作的每30幀存成一個npy
+            while frame_num <= (end_frame - start_frame + 1):
                 _, frame = cap.read()
-                image, results = common.mediapipe_detection(frame, ho_model)
-                keypoints = Common.extract_keypoints(results)
-                action_path = f"{npy_path}/{action_type}/{str(one_full_action)}"
-                if not os.path.exists(action_path):
-                    os.makedirs(action_path)
-                np.save(f"{action_path}/{str(frame_num)}", keypoints)
+                if frame_num % 30 == 0:
+                    image, results = common.mediapipe_detection(frame, ho_model)
+                    keypoints = Common.extract_keypoints(results)
+                    action_path = f"{npy_path}/{action_type}/{str(one_full_action)}"
+                    if not os.path.exists(action_path):
+                        os.makedirs(action_path)
+                    np.save(f"{action_path}/{str(frame_num)}", keypoints)
                 frame_num += 1
 
             one_full_action += 1
-
 
 def create_npy(npy_path: str):
     PRE_TRAIN_VIDEO = f"{os.getcwd()}/{Env().PRE_TRAIN_VIDEO}"
@@ -157,6 +155,6 @@ def create_npy(npy_path: str):
                         os.makedirs(action_path)
                     np.save(f"{action_path}/{str(frame_num)}", keypoints)
                     frame_num += 1
-                    if frame_num > 30:  # 檢查當前幀數是否超過30
+                    if frame_num > 30:  # 檢查是否已經存滿30幀
                         one_full_action += 1  # 換到下一個資料夾
                         frame_num = 1  # 重設幀數
