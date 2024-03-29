@@ -164,3 +164,12 @@ npy_path/
 npy_pathback/
 pre_train_video/
 backhand1.mov
+test_video/
+test_pre_train_image/
+test_npy_path/
+
+# Videos
+*.mov
+
+# training data
+*.h5
