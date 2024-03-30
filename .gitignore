@@ -167,6 +167,8 @@ backhand1.mov
 test_video/
 test_pre_train_image/
 test_npy_path/
+.idea/
+TTai/
 
 # Videos
 *.mov
