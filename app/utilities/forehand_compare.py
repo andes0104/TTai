@@ -1,18 +1,17 @@
 import cv2
 import mediapipe as mp
 
-def main():
+def forehand_compare(video_path):
     # 初始化 MediaPipe Holistic 模型
     mp_holistic = mp.solutions.holistic
     holistic = mp_holistic.Holistic()
 
     # 開啟影片檔案
-    video_path = "./test_video/forehand/forehand19.mov"
     cap = cv2.VideoCapture(video_path)
 
     frame_count = 0  # 新增幀數計數器
 
-    # 創建一個字典來存儲右手腕和鼻子的相對位置
+    # 創建一個字典來儲存右手腕和鼻子的相對位置
     relative_position = {"x_diff": None, "y_diff": None, "position": None}
 
     while cap.isOpened():
@@ -51,15 +50,18 @@ def main():
             relative_position["x_diff"] = x_diff
             relative_position["y_diff"] = y_diff
 
-            # 右手腕和鼻子的相對位置
+            # 比較右手腕和鼻子的相對位置
             if x_diff > 0 and y_diff > 0:
-                relative_position["position"] = "R-hand is right lower than the nose"
+                relative_position["position"] = "forehand"
             elif x_diff > 0 and y_diff < 0:
-                relative_position["position"] = "R-hand is right upper than the nose"
+                relative_position["position"] = "forehand loop"
 
             # 在影格上繪製鼻子和右手腕的坐標
             cv2.circle(frame, (nose_x, nose_y), 8, (0, 255, 0), -1)
             cv2.circle(frame, (Rwrist_x, Rwrist_y), 8, (255, 0, 0), -1)
+
+        # 在影格中顯示正手狀態
+        cv2.putText(frame, f'forehand Status: {relative_position["position"]}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
         
         # 顯示處理後的影格
         cv2.imshow("Frame", frame)
@@ -75,6 +77,9 @@ def main():
     # 返回右手腕和鼻子的相對位置
     return relative_position
 
-if __name__ == "__main__":
-    position = main()
-    print(position)
+# 設定影片路徑
+video_path = "forehand loop20.mov"
+
+# 呼叫正手狀態比較 function
+forehand_status = forehand_compare(video_path)
+print(forehand_status)
