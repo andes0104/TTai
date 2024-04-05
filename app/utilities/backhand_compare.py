@@ -37,6 +37,10 @@ def compare_backhand_elbow_angle(video_path):
         mp_drawing = mp.solutions.drawing_utils
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
 
+        # 框選手臂擺動區域
+        cv2.rectangle(frame, (200, 350),(1200, 800), (255, 255, 0), 2)
+        cv2.putText(frame, "Arm swing finished location", (200, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+
          # 獲取影格的高度和寬度
         h, w, c = frame.shape
 
@@ -49,7 +53,7 @@ def compare_backhand_elbow_angle(video_path):
 
             # 判斷右手肘角度狀態，並更新字典
             elbow_angle_status["angle"] = angle
-            if angle > 110 and angle < 125:
+            if angle > 110 and angle < 115:
                 elbow_angle_status["status"] = "backhand"
             elif angle > 115 and angle < 155:
                 elbow_angle_status["status"] = "backhand loop"
@@ -88,6 +92,9 @@ def compare_backhand_elbow_angle(video_path):
     # 顯示所有右手肘角度
     for angle in backhand_elbow_angles: 
         print(angle)
+    
+    # 返回右手肘角度狀態
+    return elbow_angle_status
 
 def calculate_angle(p1, p2, p3):
     # 計算右手肘角度
@@ -98,7 +105,8 @@ def calculate_angle(p1, p2, p3):
     return angle
 
 # 設定影片路徑
-video_path = 'backhand loop16.mov'
+video_path = 'backhand loop19.mov'
 
 # 呼叫反拍手肘角度比較 function
-compare_backhand_elbow_angle(video_path)
+backhand_status = compare_backhand_elbow_angle(video_path)
+print(backhand_status)

@@ -37,6 +37,10 @@ def forehand_compare(video_path):
         mp_drawing = mp.solutions.drawing_utils
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
 
+        # 框選手臂擺動區域
+        cv2.rectangle(frame, (200, 350),(1200, 800), (255, 255, 0), 2)
+        cv2.putText(frame, "Arm swing finished location", (200, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+
         if nose_landmarks and R_wrist_landmarks and frame_count % 30 == 0:  # 只有當幀數是30的倍數時，才進行分析
             # 將鼻子和右手腕的坐標轉換為像素坐標
             nose_x, nose_y = int(nose_landmarks.x * w), int(nose_landmarks.y * h)
@@ -78,7 +82,7 @@ def forehand_compare(video_path):
     return relative_position
 
 # 設定影片路徑
-video_path = "forehand loop20.mov"
+video_path = "forehand loop6.mov"
 
 # 呼叫正手狀態比較 function
 forehand_status = forehand_compare(video_path)
