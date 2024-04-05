@@ -12,13 +12,13 @@ def get_accuracy_score(npy_path: str):
     y_pred = []
 
     for x_sample in data["X_test"]:
-        # 将样本转换为 NumPy 数组，并添加一个维度，以匹配模型的输入形状
+        # 將樣本轉換為 Numpy 陣列，並添加一個維度，以匹配模型的輸入形狀
         x_sample = np.array([x_sample])
 
-        # 预测单个样本
+        # 預測單個樣本
         y_hat = model.predict(x_sample)
 
-        # 获取预测的类别
+        # 獲取預測的類別
         predicted_class = np.argmax(y_hat, axis=1)[0]
         y_pred.append(predicted_class)
 
