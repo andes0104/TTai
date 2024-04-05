@@ -37,6 +37,9 @@ def compare_backhand_elbow_angle(video_path):
         mp_drawing = mp.solutions.drawing_utils
         mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
 
+         # 獲取影格的高度和寬度
+        h, w, c = frame.shape
+
         if frame_count % 30 == 0:  # 只有當幀數是30的倍數時，才進行分析
             # 計算右肘角度
             angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
@@ -48,10 +51,24 @@ def compare_backhand_elbow_angle(video_path):
             elbow_angle_status["angle"] = angle
             if angle > 110 and angle < 125:
                 elbow_angle_status["status"] = "backhand"
-            elif angle > 115 and angle < 145:
+            elif angle > 115 and angle < 155:
                 elbow_angle_status["status"] = "backhand loop"
             else:
                 elbow_angle_status["status"] = "angle not in the range of backhand or backhand loop"
+
+        # 將右肩、右肘、右腕的坐標轉換為像素坐標
+        right_shoulder = (int(right_shoulder.x * w), int(right_shoulder.y * h))
+        right_elbow = (int(right_elbow.x * w), int(right_elbow.y * h))
+        right_wrist = (int(right_wrist.x * w), int(right_wrist.y * h))
+
+        # 在影格上繪製出關節點
+        cv2.circle(frame, right_shoulder, 8, (0, 255, 0), -1)
+        cv2.circle(frame, right_elbow, 8, (0, 255, 0), -1)
+        cv2.circle(frame, right_wrist, 8, (0, 255, 0), -1)
+
+        # 在影格上繪製出關節連線
+        cv2.line(frame, right_shoulder, right_elbow, (255, 0, 0), 2)
+        cv2.line(frame, right_elbow, right_wrist, (255, 0, 0), 2)    
 
         # 在影格上顯示右手肘角度和狀態
         if angle is not None:  # 只有當角度不為空時，才顯示
@@ -69,7 +86,7 @@ def compare_backhand_elbow_angle(video_path):
     cap.release()
 
     # 顯示所有右手肘角度
-    for angle in backhand_elbow_angles:
+    for angle in backhand_elbow_angles: 
         print(angle)
 
 def calculate_angle(p1, p2, p3):
@@ -83,5 +100,5 @@ def calculate_angle(p1, p2, p3):
 # 設定影片路徑
 video_path = 'backhand loop16.mov'
 
-# 叫叫反拍手肘角度比較 function
+# 呼叫反拍手肘角度比較 function
 compare_backhand_elbow_angle(video_path)
