@@ -11,7 +11,10 @@ def compare_backhand_elbow_angle(video_path):
     cap = cv2.VideoCapture(video_path)
 
     frame_count = 0  # 新增幀數計數器
-    backhand_elbow_angles = []
+    backhand_elbow_angles = [] # 創建一個陣列來存儲每次分析的右手肘角度
+    forearm_slopes = []  # 創建一個陣列來存儲每次分析的前臂斜率
+
+    angle = None # 初始化右手肘角度
 
     # 創建一個字典來儲存右手腕角度狀態
     elbow_angle_status = {"angle": None, "status": None}
@@ -44,21 +47,31 @@ def compare_backhand_elbow_angle(video_path):
          # 獲取影格的高度和寬度
         h, w, c = frame.shape
 
-        if frame_count % 30 == 0:  # 只有當幀數是30的倍數時，才進行分析
+        if frame_count % 30 == 15:  # 只有當幀數是每秒的第15幀時，才進行分析
             # 計算右肘角度
             angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+
+            # 計算前臂的斜率
+            forearm_slope = (right_wrist.y - right_elbow.y) / (right_wrist.x - right_elbow.x)
 
             # 將右手肘角度添加到列表中
             backhand_elbow_angles.append(angle)
 
-            # 判斷右手肘角度狀態，並更新字典
+            # 將前臂斜率添加到列表中
+            forearm_slopes.append(forearm_slope)
+
+            # 判斷右手肘角度、前臂斜率狀態，並更新字典
             elbow_angle_status["angle"] = angle
-            if angle > 110 and angle < 115:
+            elbow_angle_status["forearm_slope"] = forearm_slope
+            # if angle > 35 and angle < 70:
+            #     elbow_angle_status["status"] = "backhand"
+            # elif angle > 70 and angle < 130:
+            #     elbow_angle_status["status"] = "backhand loop"
+            
+            if forearm_slope > -0.6 and forearm_slope < 0.0063:
                 elbow_angle_status["status"] = "backhand"
-            elif angle > 115 and angle < 155:
+            elif forearm_slope > 0.0063 and forearm_slope < 1.2:
                 elbow_angle_status["status"] = "backhand loop"
-            else:
-                elbow_angle_status["status"] = "angle not in the range of backhand or backhand loop"
 
         # 將右肩、右肘、右腕的坐標轉換為像素坐標
         right_shoulder = (int(right_shoulder.x * w), int(right_shoulder.y * h))
@@ -76,8 +89,9 @@ def compare_backhand_elbow_angle(video_path):
 
         # 在影格上顯示右手肘角度和狀態
         if angle is not None:  # 只有當角度不為空時，才顯示
-            cv2.putText(frame, f'R-elbow Angle: {angle:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-            cv2.putText(frame, f'R-elbow Status: {elbow_angle_status["status"]}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(frame, f'R-elbow angle: {angle:.5f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(frame, f'R-forearm slope: {forearm_slope:.5f}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(frame, f'R-elbow Status: {elbow_angle_status["status"]}', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
         # 顯示影格
         cv2.imshow("Frame", frame)
@@ -92,6 +106,10 @@ def compare_backhand_elbow_angle(video_path):
     # 顯示所有右手肘角度
     for angle in backhand_elbow_angles: 
         print(angle)
+
+    # 顯示每次分析的前臂斜率
+    for slope in forearm_slopes:
+        print(slope)
     
     # 返回右手肘角度狀態
     return elbow_angle_status
@@ -105,7 +123,7 @@ def calculate_angle(p1, p2, p3):
     return angle
 
 # 設定影片路徑
-video_path = 'backhand loop19.mov'
+video_path = 'backhand loop5.mov'
 
 # 呼叫反拍手肘角度比較 function
 backhand_status = compare_backhand_elbow_angle(video_path)
