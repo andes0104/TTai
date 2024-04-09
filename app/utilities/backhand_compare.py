@@ -2,13 +2,10 @@ import math
 import cv2
 import mediapipe as mp
 
-def compare_backhand_elbow_angle(video_path):
+def backhand_compare(frame):
     # 初始化 MediaPipe Holistic 模型
     mp_holistic = mp.solutions.holistic
     holistic = mp_holistic.Holistic()
-
-    # 開啟影片檔案
-    cap = cv2.VideoCapture(video_path)
 
     frame_count = 0  # 新增幀數計數器
     backhand_elbow_angles = [] # 創建一個陣列來存儲每次分析的右手肘角度
@@ -19,89 +16,79 @@ def compare_backhand_elbow_angle(video_path):
     # 創建一個字典來儲存右手腕角度狀態
     elbow_angle_status = {"angle": None, "status": None}
 
-    while cap.isOpened():
-        # 讀取一幀影片
-        ret, frame = cap.read()
-        if not ret:
-            break
+    # 轉換影格顏色空間 BGR 到 RGB
+    image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        # 轉換影格顏色空間 BGR 到 RGB
-        image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    # 分析影格
+    results = holistic.process(image_rgb)
 
-        # 分析影格
-        results = holistic.process(image_rgb)
+    # 提取右肩、右肘、右手腕的坐標
+    right_shoulder = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_SHOULDER]
+    right_elbow = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW]
+    right_wrist = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_WRIST]
 
-        # 提取右肩、右肘、右手腕的坐標
-        right_shoulder = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_SHOULDER]
-        right_elbow = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW]
-        right_wrist = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_WRIST]
+    # 在影格上繪製特徵點和連接線
+    mp_drawing = mp.solutions.drawing_utils
+    mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
 
-        # 在影格上繪製特徵點和連接線
-        mp_drawing = mp.solutions.drawing_utils
-        mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS)
+    # 框選手臂擺動區域
+    cv2.rectangle(frame, (200, 350),(1200, 800), (255, 255, 0), 2)
+    cv2.putText(frame, "Arm swing finished location", (200, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
 
-        # 框選手臂擺動區域
-        cv2.rectangle(frame, (200, 350),(1200, 800), (255, 255, 0), 2)
-        cv2.putText(frame, "Arm swing finished location", (200, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+        # 獲取影格的高度和寬度
+    h, w, c = frame.shape
 
-         # 獲取影格的高度和寬度
-        h, w, c = frame.shape
+    if frame_count % 30 == 15:  # 只有當幀數是每秒的第15幀時，才進行分析
+        # 計算右肘角度
+        angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
 
-        if frame_count % 30 == 15:  # 只有當幀數是每秒的第15幀時，才進行分析
-            # 計算右肘角度
-            angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+        # 計算前臂的斜率
+        forearm_slope = (right_wrist.y - right_elbow.y) / (right_wrist.x - right_elbow.x)
 
-            # 計算前臂的斜率
-            forearm_slope = (right_wrist.y - right_elbow.y) / (right_wrist.x - right_elbow.x)
+        # 將右手肘角度添加到列表中
+        backhand_elbow_angles.append(angle)
 
-            # 將右手肘角度添加到列表中
-            backhand_elbow_angles.append(angle)
+        # 將前臂斜率添加到列表中
+        forearm_slopes.append(forearm_slope)
 
-            # 將前臂斜率添加到列表中
-            forearm_slopes.append(forearm_slope)
+        # 判斷右手肘角度、前臂斜率狀態，並更新字典
+        elbow_angle_status["angle"] = angle
+        elbow_angle_status["forearm_slope"] = forearm_slope
+        # if angle > 35 and angle < 70:
+        #     elbow_angle_status["status"] = "backhand"
+        # elif angle > 70 and angle < 130:
+        #     elbow_angle_status["status"] = "backhand loop"
+        
+        if forearm_slope > -0.6 and forearm_slope < 0.0063:
+            elbow_angle_status["status"] = "backhand"
+        elif forearm_slope > 0.0063 and forearm_slope < 1.2:
+            elbow_angle_status["status"] = "backhand loop"
 
-            # 判斷右手肘角度、前臂斜率狀態，並更新字典
-            elbow_angle_status["angle"] = angle
-            elbow_angle_status["forearm_slope"] = forearm_slope
-            # if angle > 35 and angle < 70:
-            #     elbow_angle_status["status"] = "backhand"
-            # elif angle > 70 and angle < 130:
-            #     elbow_angle_status["status"] = "backhand loop"
-            
-            if forearm_slope > -0.6 and forearm_slope < 0.0063:
-                elbow_angle_status["status"] = "backhand"
-            elif forearm_slope > 0.0063 and forearm_slope < 1.2:
-                elbow_angle_status["status"] = "backhand loop"
+    # 將右肩、右肘、右腕的坐標轉換為像素坐標
+    right_shoulder = (int(right_shoulder.x * w), int(right_shoulder.y * h))
+    right_elbow = (int(right_elbow.x * w), int(right_elbow.y * h))
+    right_wrist = (int(right_wrist.x * w), int(right_wrist.y * h))
 
-        # 將右肩、右肘、右腕的坐標轉換為像素坐標
-        right_shoulder = (int(right_shoulder.x * w), int(right_shoulder.y * h))
-        right_elbow = (int(right_elbow.x * w), int(right_elbow.y * h))
-        right_wrist = (int(right_wrist.x * w), int(right_wrist.y * h))
+    # 在影格上繪製出關節點
+    cv2.circle(frame, right_shoulder, 8, (0, 255, 0), -1)
+    cv2.circle(frame, right_elbow, 8, (0, 255, 0), -1)
+    cv2.circle(frame, right_wrist, 8, (0, 255, 0), -1)
 
-        # 在影格上繪製出關節點
-        cv2.circle(frame, right_shoulder, 8, (0, 255, 0), -1)
-        cv2.circle(frame, right_elbow, 8, (0, 255, 0), -1)
-        cv2.circle(frame, right_wrist, 8, (0, 255, 0), -1)
+    # 在影格上繪製出關節連線
+    cv2.line(frame, right_shoulder, right_elbow, (255, 0, 0), 2)
+    cv2.line(frame, right_elbow, right_wrist, (255, 0, 0), 2)    
 
-        # 在影格上繪製出關節連線
-        cv2.line(frame, right_shoulder, right_elbow, (255, 0, 0), 2)
-        cv2.line(frame, right_elbow, right_wrist, (255, 0, 0), 2)    
+    # 在影格上顯示右手肘角度和狀態
+    if angle is not None:  # 只有當角度不為空時，才顯示
+        cv2.putText(frame, f'R-elbow angle: {angle:.5f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f'R-forearm slope: {forearm_slope:.5f}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f'R-elbow Status: {elbow_angle_status["status"]}', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
-        # 在影格上顯示右手肘角度和狀態
-        if angle is not None:  # 只有當角度不為空時，才顯示
-            cv2.putText(frame, f'R-elbow angle: {angle:.5f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-            cv2.putText(frame, f'R-forearm slope: {forearm_slope:.5f}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-            cv2.putText(frame, f'R-elbow Status: {elbow_angle_status["status"]}', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-
-        # 顯示影格
-        cv2.imshow("Frame", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-        frame_count += 1  # 更新幀數計數器
-
-    # 釋放資源
-    cap.release()
+    # 顯示影格
+    cv2.imshow("Frame", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        # 釋放資源
+        cv2.destroyAllWindows()
 
     # 顯示所有右手肘角度
     for angle in backhand_elbow_angles: 
@@ -121,10 +108,3 @@ def calculate_angle(p1, p2, p3):
     )
 
     return angle
-
-# 設定影片路徑
-video_path = 'backhand loop5.mov'
-
-# 呼叫反拍手肘角度比較 function
-backhand_status = compare_backhand_elbow_angle(video_path)
-print(backhand_status)
