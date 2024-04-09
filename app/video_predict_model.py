@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from app.utilities.forehand_compare import forehand_compare
+from app.utilities.backhand_compare import backhand_compare
 from app.utilities.load_model import load_model
 from collections import deque
 from app.utilities.common import Common
@@ -12,9 +14,12 @@ def video_predict_model():
     holistic = common.mp_holistic
     queue = deque(maxlen=30)
 
+    # 設定影片路徑
+    video_path = "backhand loop19.mov"
+
     with holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as ho_model:
-        # 打開摄影機
-        cap = cv2.VideoCapture('forehand loop20.mov')
+        # 打開攝影機
+        cap = cv2.VideoCapture(video_path)
         frame_num = 0
         while cap.isOpened():
             ret, frame = cap.read()
