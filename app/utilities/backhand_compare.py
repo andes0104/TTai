@@ -22,6 +22,10 @@ def backhand_compare(frame):
     # 分析影格
     results = holistic.process(image_rgb)
 
+    if results.pose_landmarks is None:  # 如果沒有偵測到人體關鍵點，則返回
+        print("No pose landmarks detected in the frame.")
+        return
+    
     # 提取右肩、右肘、右手腕的坐標
     right_shoulder = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_SHOULDER]
     right_elbow = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_ELBOW]

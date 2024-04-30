@@ -17,6 +17,10 @@ def forehand_compare(frame):
     # 分析影格
     results = holistic.process(image_rgb)
 
+    if results.pose_landmarks is None:  # 如果沒有偵測到人體關鍵點，則返回
+        print("No pose landmarks detected in the frame.")
+        return
+
     # 提取鼻子和右手腕的坐標
     nose_landmarks = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.NOSE]
     R_wrist_landmarks = results.pose_landmarks.landmark[mp_holistic.PoseLandmark.RIGHT_WRIST]
