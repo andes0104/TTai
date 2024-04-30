@@ -1,7 +1,7 @@
 from app.utilities.setting import Env
 from app.utilities.common import Common
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
+from keras.utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import os
