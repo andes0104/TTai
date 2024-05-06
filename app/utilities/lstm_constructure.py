@@ -7,7 +7,7 @@ import os
 
 def model_constructure():
     model = Sequential()
-    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662)))
+    model.add(LSTM(64, return_sequences=True, activation='relu', input_shape=(30,1662))) # 30 frames, 468*3 + 33*4 + 21*3 + 21*3 = 1662 keypoints = face + pose + lh + rh 
     model.add(LSTM(128, return_sequences=True, activation='relu'))
     model.add(LSTM(64, return_sequences=False, activation='relu'))
     model.add(Dense(64, activation='relu'))
