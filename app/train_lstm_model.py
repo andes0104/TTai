@@ -1,4 +1,4 @@
-from app.utilities.model_constructure_init import model_constructure
+from app.utilities.lstm_constructure import model_constructure
 from app.utilities.setting import Env
 import numpy as np
 import os
@@ -16,3 +16,6 @@ def train_model(data):
 
     # 儲存模型
     model.save(Env().MODEL_FILE)
+
+    # 在訓練模型後，返回模型
+    return model
