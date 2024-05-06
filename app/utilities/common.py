@@ -5,7 +5,9 @@ from app.utilities.setting import Env
 import os
 
 PRE_TRAIN_VIDEO = Env().PRE_TRAIN_VIDEO
+PRE_TRAIN_IMAGE = Env().PRE_TRAIN_IMAGE
 NPY_ROOT_PATH = Env().NPY_ROOT_PATH
+IMAGE_ROOT_PATH = Env().IMAGE_ROOT_PATH
 
 
 class Common:
@@ -23,6 +25,10 @@ class Common:
         Returns:
             _type_: _description_
         """
+        if image is None:
+            print("Image not loaded correctly")
+            return None, None
+
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False  # Image is no longer writeable
         results = model.process(image)  # Make prediction
@@ -60,17 +66,17 @@ class Common:
             results (_type_): _description_
         """
         # Draw face connections
-        self.mp_drawing.draw_landmarks(
-            image,
-            results.face_landmarks,
-            self.mp_holistic.FACEMESH_TESSELATION,
-            self.mp_drawing.DrawingSpec(
-                color=(80, 110, 10), thickness=1, circle_radius=1
-            ),
-            self.mp_drawing.DrawingSpec(
-                color=(80, 256, 121), thickness=1, circle_radius=1
-            ),
-        )
+        # self.mp_drawing.draw_landmarks(
+        #     image,
+        #     results.face_landmarks,
+        #     self.mp_holistic.FACEMESH_TESSELATION,
+        #     self.mp_drawing.DrawingSpec(
+        #         color=(80, 110, 10), thickness=1, circle_radius=1
+        #     ),
+        #     self.mp_drawing.DrawingSpec(
+        #         color=(80, 256, 121), thickness=1, circle_radius=1
+        #     ),
+        # )
         # Draw pose connections
         self.mp_drawing.draw_landmarks(
             image,
@@ -110,6 +116,10 @@ class Common:
 
     @staticmethod
     def extract_keypoints(results):
+        if results is None:
+            print("Results object is None")
+            return None
+        
         pose = (
             np.array(
                 [
@@ -120,13 +130,13 @@ class Common:
             if results.pose_landmarks
             else np.zeros(33 * 4)
         )
-        face = (
-            np.array(
-                [[res.x, res.y, res.z] for res in results.face_landmarks.landmark]
-            ).flatten()
-            if results.face_landmarks
-            else np.zeros(468 * 3)
-        )
+        # face = (
+        #     np.array(
+        #         [[res.x, res.y, res.z] for res in results.face_landmarks.landmark]
+        #     ).flatten()
+        #     if results.face_landmarks
+        #     else np.zeros(468 * 3)
+        # )
         lh = (
             np.array(
                 [[res.x, res.y, res.z] for res in results.left_hand_landmarks.landmark]
@@ -141,7 +151,7 @@ class Common:
             if results.right_hand_landmarks
             else np.zeros(21 * 3)
         )
-        return np.concatenate([pose, face, lh, rh])
+        return np.concatenate([pose, lh, rh])
 
     @staticmethod
     def creat_labels(npy_path) -> list:
