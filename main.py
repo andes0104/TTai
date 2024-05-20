@@ -1,27 +1,31 @@
-from app.create_npy import create_npy
-from app.utilities.pre_process_data import pre_process
-from app.train_model import train_model
-from app.model_predict import get_accuracy_score
-from app.video_predict_model import video_predict_model
-import os
 from app.utilities.setting import Env
 from app.utilities.common import Common
-from app.utilities.image_capture import video_split
+from app.utilities.create_data import split_dataset
+# from app.utilities.image_capture import video_split
+# from app.utilities.make_excel import create_excel_with_coordinates
+from app.image_to_blackbackground import image_pre_process
+from app.train_cnn_model import train_model
+from app.model_cnn_predict import get_prediction
+from app.video_predict_CNN import video_predict_model
+import os
 
 if __name__ == "__main__":
-    video_split(video_path="./test_video/forehand/forehand12.mov", save_path="./test_pre_train_image/forehand12")
+    # 影片切割成每個動作的frame
+    # video_split()
 
-    # NPY_PATH = f"{os.getcwd()}/{Env().NPY_ROOT_PATH}"
-    # # 剪片、製作每個動作的npy
-    # create_npy(npy_path=NPY_PATH)
+    # 抓取關鍵動作frame中的鼻子、右腕、右肘、右肩的坐標，並存成excel檔
+    # create_excel_with_coordinates()
 
-    # # 把訓練好的npy切割成測試、訓練集
-    # data = pre_process(npy_path=NPY_PATH)
+    # 關鍵動作frame轉換為背景為黑的人體骨架圖
+    # image_pre_process()
 
-    # # 訓練模型
-    # train_model(data=data)
+    # 將黑背景的人體骨架圖片，分割成訓練集與測試集
+    # split_dataset()
+
+    # 訓練模型
+    # train_model()
 
     # 預測模型
-    # get_accuracy_score(npy_path=NPY_PATH)
+    # get_prediction("frame_15.jpg")
 
-    # video_predict_model()
+    video_predict_model('forehand loop6.mov')
