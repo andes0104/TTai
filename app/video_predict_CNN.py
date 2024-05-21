@@ -30,8 +30,6 @@ def process_and_predict(frame):
     common = Common()
     holistic = common.mp_holistic
     with holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as ho_model:
-        # 縮小影像解析度
-        frame = cv2.resize(frame, (frame.shape[1] // 3, frame.shape[0] // 3))
         black_background = process_frame(frame, common, ho_model)
         # 檢查是否有人體骨架
         if black_background is not None:
@@ -40,11 +38,14 @@ def process_and_predict(frame):
             return predictions, frame
 
 def video_predict_model(video_path):
+    # 載入模型
     model = load_cnn_model()
     cap = cv2.VideoCapture(video_path)
+    # 取得影片的幀率
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_num = 0
 
+    # 使用 ProcessPoolExecutor 並行處理每個幀
     with ProcessPoolExecutor(max_workers=4) as executor:
         while cap.isOpened():
             ret, frame = cap.read()
@@ -52,7 +53,9 @@ def video_predict_model(video_path):
             if not ret:
                 break
             
-            if frame_num % int(fps) in [15, 30]:
+            if frame_num % 30 == 0:
+                # 縮小影像1/3解析度
+                frame = cv2.resize(frame, (frame.shape[1] // 3, frame.shape[0] // 3))
                 future = executor.submit(process_and_predict, frame)
                 predictions, frame_copy = future.result()
 
@@ -66,6 +69,7 @@ def video_predict_model(video_path):
                 elif np.argmax(predictions) == 3:
                     cv2.putText(frame_copy, "Forehand Loop", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
+                # 顯示預測結果
                 cv2.imshow("Prediction", frame_copy)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
