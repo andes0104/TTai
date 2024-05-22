@@ -1,10 +1,12 @@
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 from app.utilities.setting import Env
 from keras.preprocessing.image import ImageDataGenerator
 from app.utilities.cnn_constructure import cnn_constructure
 
 def train_model():
-            
     # 指定訓練數據集和驗證數據集的路徑
     IMAGE_ROOT_PATH = f"{os.getcwd()}/{Env().IMAGE_ROOT_PATH}"
     train_data_dir = f"{IMAGE_ROOT_PATH}/train"
@@ -38,12 +40,37 @@ def train_model():
     model = cnn_constructure()
 
     # 訓練模型
-    model.fit(
+    history = model.fit(
         train_generator,
         steps_per_epoch=45,
         epochs=50,
         validation_data=validation_generator,
         validation_steps=800)
+    
+    # 繪製訓練和驗證的損失和準確度曲線
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Losses')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(history.history['accuracy'], label='Train Accuracy')
+    plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+    plt.title('Accuracies')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('training_curves.png')
+
+    # 計算並繪製混淆矩陣
+    y_pred = model.predict(validation_generator)
+    y_pred_classes = np.argmax(y_pred, axis=1)
+    confusion_mtx = confusion_matrix(validation_generator.classes, y_pred_classes)
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(confusion_mtx, annot=True, fmt='d')
+    plt.savefig('confusion_matrix.png')
 
     # 儲存模型
     model.save(Env().CNN_MODEL_FILE)
