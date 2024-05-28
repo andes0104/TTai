@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from sklearn.metrics import confusion_matrix
 from app.utilities.setting import Env
 from keras.preprocessing.image import ImageDataGenerator
@@ -45,7 +46,10 @@ def train_model():
         steps_per_epoch=45,
         epochs=50,
         validation_data=validation_generator,
-        validation_steps=800)
+        validation_steps=validation_generator.samples // 32)
+    
+    # 印出 history.history
+    print(history.history)
     
     # 繪製訓練和驗證的損失和準確度曲線
     plt.figure(figsize=(12, 4))

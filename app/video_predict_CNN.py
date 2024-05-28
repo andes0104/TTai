@@ -63,6 +63,9 @@ def video_predict_model(video_path):
                     cv2.putText(frame, "Forehand", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
                 elif np.argmax(predictions) == 3:
                     cv2.putText(frame, "Forehand Loop", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                
+                # 將預測準確率顯示在畫面左上角
+                cv2.putText(frame, f"Accuracy: {(np.max(predictions) * 100)}%", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
                 # 將處理後的幀儲存回矩陣位址
                 frames[-1] = frame
