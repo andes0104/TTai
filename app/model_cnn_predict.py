@@ -31,6 +31,8 @@ def get_prediction(image_path):
         cv2.putText(image, "Forehand", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     elif np.argmax(predictions) == 3:
         cv2.putText(image, "Forehand Loop", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(image, "Confidence: {:.2f}".format(predictions[0][np.argmax(predictions)]), (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.imshow("Prediction", image)
+    cv2.imwrite("prediction.jpg", image)
     cv2.waitKey(0)
     print(predictions)

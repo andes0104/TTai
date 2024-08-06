@@ -53,6 +53,7 @@ def video_predict_model(video_path):
             if frame_num % 30 == 0:
                 future = executor.submit(process_and_predict, frame)
                 predictions, frame = future.result()
+                print(predictions)
 
                 # 將預測結果顯示在畫面左上角
                 if np.argmax(predictions) == 0:

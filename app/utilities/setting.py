@@ -17,3 +17,4 @@ class Env:
         self.PRE_TRAIN_VIDEO = os.getenv("PRE_TRAIN_VIDEO")
         self.PRE_TRAIN_IMAGE = os.getenv("PRE_TRAIN_IMAGE")
         self.BLACK_BACKGROUND = os.getenv("BLACK_BACKGROUND")
+        self.SKELETON = os.getenv("SKELETON")
