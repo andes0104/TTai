@@ -1,6 +1,6 @@
 import cv2
 from app.utilities.common import Common
-from app.utilities.load_model import load_model
+from app.utilities.load_lstm_model import load_lstm_model
 import numpy as np
 from app.utilities.setting import Env
 
